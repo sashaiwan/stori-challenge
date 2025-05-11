@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stori Transaction Summary</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333333;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 2px solid #f5f5f5;
+      }
+      .logo {
+        max-width: 180px;
+        height: auto;
+      }
+      .summary {
+        padding: 20px 0;
+        border-bottom: 1px solid #f5f5f5;
+      }
+      .total-balance {
+        font-size: 24px;
+        font-weight: bold;
+        color: #14a248;
+        text-align: center;
+        padding: 15px 0;
+      }
+      .section-title {
+        font-size: 18px;
+        color: #14a248;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+      .transactions-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .transactions-table th {
+        background-color: #f5f5f5;
+        text-align: left;
+        padding: 10px;
+      }
+      .transactions-table td {
+        padding: 10px;
+        border-bottom: 1px solid #f5f5f5;
+      }
+      .averages {
+        padding: 20px 0;
+      }
+      .average-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        font-size: 12px;
+        color: #999999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://www.storicard.com/_next/static/media/stori_s_color.90dc745f.svg"
+          alt="Stori Logo"
+          class="logo"
+        />
+        <h1>Transaction Summary</h1>
+      </div>
+      <div class="summary">
+        <div class="total-balance">Total Balance: ${{.TotalBalance}}</div>
+
+        <div class="section-title">Transactions by Month</div>
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Number of Transactions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $month, $stats := .StatsByMonth}}
+            <tr>
+              <td>{{monthName $month}}</td>
+              <td>{{add $stats.Credit.Count $stats.Debit.Count}}</td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+
+        <div class="section-title">Monthly Average Amounts</div>
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Average Debit</th>
+              <th>Average Credit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $month, $stats := .StatsByMonth}}
+            <tr>
+              <td>{{monthName $month}}</td>
+              <td class="debit">
+                {{if gt $stats.Debit.Count 0}}-${{formatCurrency
+                $stats.Debit.Average}}{{else}}N/A{{end}}
+              </td>
+              <td class="credit">
+                {{if gt $stats.Credit.Count 0}}${{formatCurrency
+                $stats.Credit.Average}}{{else}}N/A{{end}}
+              </td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="footer">
+        <p>This is an automated message from Stori. Please do not reply to this email.</p>
+        <p>&copy; 2025 Stori. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>
