@@ -24,7 +24,7 @@ func processCSV(filepath string) ([]Transaction, error) {
 		header[i] = strings.ToLower(header[i])
 	}
 	if !validateHeader(header, expectedHeader) {
-		return nil, fmt.Errorf("Invalid CSV header. Expected: %v, Actual: %v",
+		return nil, fmt.Errorf("invalid CSV header. Expected: %v, Actual: %v",
 			expectedHeader, header)
 	}
 
@@ -49,13 +49,13 @@ func processCSV(filepath string) ([]Transaction, error) {
 func readAllLines(filepath string) ([]string, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to open file: %v", err)
+		return nil, fmt.Errorf("unable to open file: %v", err)
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading all lines: %v", err)
+		return nil, fmt.Errorf("error reading all lines: %v", err)
 	}
 
 	dataContent := string(data)
@@ -93,10 +93,13 @@ func parseTransaction(fields []string) (Transaction, error) {
 	// This could be an UUID
 	id, err := strconv.Atoi(fields[0])
 	if err != nil {
-		return Transaction{}, fmt.Errorf("Invalid ID format: %v", err)
+		return Transaction{}, fmt.Errorf("invalid ID format: %v", err)
 	}
 
 	date, err := parseDate(fields[1])
+	if err != nil {
+		return Transaction{}, fmt.Errorf("invalid date format: %v", err)
+	}
 
 	amountStr := fields[2]
 	var transactionType TransactionType
@@ -106,7 +109,7 @@ func parseTransaction(fields []string) (Transaction, error) {
 		transactionType = Debit
 	} else {
 		return Transaction{}, fmt.Errorf(
-			"Transaction prefix is invalid. Expect '-' or '+' but received: %s", amountStr)
+			"transaction prefix is invalid. Expect '-' or '+' but received: %s", amountStr)
 	}
 
 	amount, err := strconv.ParseFloat(amountStr[1:], 64)
@@ -127,17 +130,17 @@ func parseTransaction(fields []string) (Transaction, error) {
 func parseDate(dateStr string) (string, error) {
 	parts := strings.Split(dateStr, "/")
 	if len(parts) != 2 {
-		return "", fmt.Errorf("Invalid date format: %s", dateStr)
+		return "", fmt.Errorf("invalid date format: %s", dateStr)
 	}
 
 	month, err := strconv.Atoi(parts[0])
 	if err != nil || month < 1 || month > 12 {
-		return "", fmt.Errorf("Invalid month: %s", parts[0])
+		return "", fmt.Errorf("invalid month: %s", parts[0])
 	}
 
 	day, err := strconv.Atoi(parts[1])
 	if err != nil || day < 1 || day > 31 {
-		return "", fmt.Errorf("Invalid day: %s", parts[1])
+		return "", fmt.Errorf("invalid day: %s", parts[1])
 	}
 
 	year := time.Now().Year()
