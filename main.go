@@ -26,6 +26,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error processing file: %v\n", err)
 		os.Exit(1)
 	}
-
 	fmt.Printf("Successfully processed %d transactions\n", len(transactions))
+
+	transactionStats := getTransactionStats(transactions)
+	fmt.Println(transactionStats)
 }
