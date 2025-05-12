@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -20,6 +22,8 @@ func main() {
 	// 5. Create the CSV parser
 	// 6. Create the email service
 
+	godotenv.Load()
+
 	filepath := "./txns.csv"
 	transactions, err := processCSV(filepath)
 	if err != nil {
@@ -30,4 +34,11 @@ func main() {
 
 	transactionStats := getTransactionStats(transactions)
 	fmt.Println(transactionStats)
+
+	// TODO: add recipient email
+	mailErr := sendEmail(transactionStats, "")
+	if mailErr != nil {
+		fmt.Fprintf(os.Stderr, "Error sending email: %v\n", mailErr)
+		os.Exit(1)
+	}
 }
