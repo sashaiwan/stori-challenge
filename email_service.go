@@ -2,8 +2,14 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"html/template"
+	"mime/multipart"
+	"net/smtp"
+	"net/textproto"
+	"os"
+	"path/filepath"
 )
 
 type EmailData struct {
@@ -11,8 +17,61 @@ type EmailData struct {
 	StatsByMonth map[string]MonthlyStats
 }
 
-// TODO:
-// func sendEmail()
+func sendEmail(stats TransactionStats, recipient string) error {
+	emailBody, err := generateHTMLEmail(stats)
+	if err != nil {
+		return fmt.Errorf("error creating the email template: %v", err)
+	}
+
+	gmailUsername := os.Getenv("GMAIL_USERNAME")
+	gmailPassword := os.Getenv("GMAIL_PASSWORD")
+	gmailAuth := smtp.PlainAuth("", gmailUsername, gmailPassword, "smtp.gmail.com")
+
+	var emailBuffer bytes.Buffer
+	writer := multipart.NewWriter(&emailBuffer)
+
+	emailBuffer.WriteString(fmt.Sprintf("From: %s\r\n", gmailUsername))
+	emailBuffer.WriteString(fmt.Sprintf("To: %s\r\n", recipient))
+	emailBuffer.WriteString("Subject: Your Stori Account Transaction Summary\r\n")
+	emailBuffer.WriteString("MIME-Version: 1.0\r\n")
+	emailBuffer.WriteString(fmt.Sprintf(
+		"Content-Type: multipart/related; boundary=%s\r\n\r\n", writer.Boundary()))
+
+	htmlPart, err := writer.CreatePart(textproto.MIMEHeader{
+		"Content-Type": {"text/html; charset=UTF-8"},
+	})
+	if err != nil {
+		return fmt.Errorf("error creating HTML part: %v", err)
+	}
+	htmlPart.Write([]byte(emailBody))
+
+	logoPath := filepath.Join("templates", "stori-logo.png")
+	logoData, err := os.ReadFile(logoPath)
+	if err == nil {
+		imagePart, err := writer.CreatePart(textproto.MIMEHeader{
+			"Content-Type":              {"image/png"},
+			"Content-Transfer-Encoding": {"base64"},
+			"Content-ID":                {"<stori-logo>"},
+			"Content-Disposition":       {"inline"},
+		})
+		if err != nil {
+			return fmt.Errorf("error creating image part: %v", err)
+		}
+
+		encoder := base64.NewEncoder(base64.StdEncoding, imagePart)
+		encoder.Write(logoData)
+		encoder.Close()
+	}
+
+	writer.Close()
+
+	mailErr := smtp.SendMail(
+		"smtp.gmail.com:587", gmailAuth, gmailUsername, []string{recipient}, emailBuffer.Bytes())
+	if mailErr != nil {
+		return fmt.Errorf("error sending email: %v", mailErr)
+	}
+	return nil
+}
 
 func generateHTMLEmail(stats TransactionStats) (string, error) {
 	funcMap := template.FuncMap{
@@ -22,7 +81,8 @@ func generateHTMLEmail(stats TransactionStats) (string, error) {
 		"gt":             func(a, b int) bool { return a > b },
 	}
 
-	template, err := template.New("email").Funcs(funcMap).ParseFiles("./templates/email-template.html")
+	templatePath := filepath.Join("templates", "email-template.html")
+	htmlTemplate, err := template.New("email").Funcs(funcMap).ParseFiles(templatePath)
 	if err != nil {
 		return "", fmt.Errorf("error loading template file: %v", err)
 	}
@@ -33,7 +93,7 @@ func generateHTMLEmail(stats TransactionStats) (string, error) {
 	}
 
 	var buf bytes.Buffer
-	if err := template.ExecuteTemplate(&buf, "email-template.html", data); err != nil {
+	if err := htmlTemplate.ExecuteTemplate(&buf, "email-template.html", data); err != nil {
 		return "", fmt.Errorf("error executing template: %v", err)
 	}
 
