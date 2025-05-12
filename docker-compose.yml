@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: transactions
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=transactions
+      - CSV_FILE_PATH=/data/txns.csv
+      - GMAIL_USERNAME=${GMAIL_USERNAME}
+      - GMAIL_PASSWORD=${GMAIL_PASSWORD}
+      - RECIPIENT_EMAIL=${RECIPIENT_EMAIL}
+    volumes:
+      - ./data:/data
+    command: ./stori-challenge
+
+volumes:
+  db_data:
