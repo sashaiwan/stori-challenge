@@ -27,15 +27,9 @@ func sendEmail(stats TransactionStats, recipient string) error {
 	gmailPassword := os.Getenv("GMAIL_PASSWORD")
 	gmailAuth := smtp.PlainAuth("", gmailUsername, gmailPassword, "smtp.gmail.com")
 
-	var emailBuffer bytes.Buffer
-	writer := multipart.NewWriter(&emailBuffer)
-
-	emailBuffer.WriteString(fmt.Sprintf("From: %s\r\n", gmailUsername))
-	emailBuffer.WriteString(fmt.Sprintf("To: %s\r\n", recipient))
-	emailBuffer.WriteString("Subject: Your Stori Account Transaction Summary\r\n")
-	emailBuffer.WriteString("MIME-Version: 1.0\r\n")
-	emailBuffer.WriteString(fmt.Sprintf(
-		"Content-Type: multipart/related; boundary=%s\r\n\r\n", writer.Boundary()))
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	defer writer.Close()
 
 	htmlPart, err := writer.CreatePart(textproto.MIMEHeader{
 		"Content-Type": {"text/html; charset=UTF-8"},
@@ -63,7 +57,17 @@ func sendEmail(stats TransactionStats, recipient string) error {
 		encoder.Close()
 	}
 
-	writer.Close()
+	var emailBuffer bytes.Buffer
+
+	emailBuffer.WriteString(fmt.Sprintf("From: %s\r\n", gmailUsername))
+	emailBuffer.WriteString(fmt.Sprintf("To: %s\r\n", recipient))
+	emailBuffer.WriteString("Subject: Your Stori Account Transaction Summary\r\n")
+	emailBuffer.WriteString("MIME-Version: 1.0\r\n")
+	emailBuffer.WriteString(fmt.Sprintf(
+		"Content-Type: multipart/related; boundary=%s\r\n\r\n", writer.Boundary()))
+	emailBuffer.WriteString("\r\n")
+
+	emailBuffer.Write(body.Bytes())
 
 	mailErr := smtp.SendMail(
 		"smtp.gmail.com:587", gmailAuth, gmailUsername, []string{recipient}, emailBuffer.Bytes())
