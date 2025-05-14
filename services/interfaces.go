@@ -9,3 +9,7 @@ type EmailSender interface {
 type TransactionProcessor interface {
 	GetTransactionStats(transactions []models.Transaction) TransactionStats
 }
+
+type FilesProcessor interface {
+	ProcessCSV(filepath string) ([]models.Transaction, error)
+}
