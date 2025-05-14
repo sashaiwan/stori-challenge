@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"stori-challenge/models"
 	"strconv"
 	"strings"
 	"time"
 )
 
 // processCSV gets a filepath and return an array of validated Transaction struct
-func processCSV(filepath string) ([]Transaction, error) {
+func processCSV(filepath string) ([]models.Transaction, error) {
 
 	lines, err := readAllLines(filepath)
 	if err != nil {
@@ -28,7 +29,7 @@ func processCSV(filepath string) ([]Transaction, error) {
 			expectedHeader, header)
 	}
 
-	var transactions []Transaction
+	var transactions []models.Transaction
 
 	// We already process and validate the header
 	for _, line := range lines[1:] {
@@ -89,35 +90,35 @@ func validateHeader(actual []string, expected []string) bool {
 
 // parseTransaction gets an array of string with the parsed fields
 // and returns a Transaction struct.
-func parseTransaction(fields []string) (Transaction, error) {
+func parseTransaction(fields []string) (models.Transaction, error) {
 	// This could be an UUID
 	id, err := strconv.Atoi(fields[0])
 	if err != nil {
-		return Transaction{}, fmt.Errorf("invalid ID format: %v", err)
+		return models.Transaction{}, fmt.Errorf("invalid ID format: %v", err)
 	}
 
 	date, err := parseDate(fields[1])
 	if err != nil {
-		return Transaction{}, fmt.Errorf("invalid date format: %v", err)
+		return models.Transaction{}, fmt.Errorf("invalid date format: %v", err)
 	}
 
 	amountStr := fields[2]
-	var transactionType TransactionType
+	var transactionType models.TransactionType
 	if strings.HasPrefix(amountStr, "+") {
-		transactionType = Credit
+		transactionType = models.Credit
 	} else if strings.HasPrefix(amountStr, "-") {
-		transactionType = Debit
+		transactionType = models.Debit
 	} else {
-		return Transaction{}, fmt.Errorf(
+		return models.Transaction{}, fmt.Errorf(
 			"transaction prefix is invalid. Expect '-' or '+' but received: %s", amountStr)
 	}
 
 	amount, err := strconv.ParseFloat(amountStr[1:], 64)
 	if err != nil {
-		return Transaction{}, fmt.Errorf("invalid amount: %s", err)
+		return models.Transaction{}, fmt.Errorf("invalid amount: %s", err)
 	}
 
-	return Transaction{
+	return models.Transaction{
 		Id:     id,
 		Date:   date,
 		Amount: amount,
