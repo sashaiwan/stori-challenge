@@ -1,9 +1,10 @@
 services:
   db:
     image: postgres:13
+    restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: transactions
     volumes:
       - db_data:/var/lib/postgresql/data
@@ -16,6 +17,8 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    ports:
+      - 8080:8080
     depends_on:
       - db
     environment:
@@ -28,6 +31,9 @@ services:
       - GMAIL_USERNAME=${GMAIL_USERNAME}
       - GMAIL_PASSWORD=${GMAIL_PASSWORD}
       - RECIPIENT_EMAIL=${RECIPIENT_EMAIL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
     volumes:
       - ./data:/data
     command: ./stori-challenge

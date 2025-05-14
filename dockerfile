@@ -20,4 +20,6 @@ COPY --from=builder /app/templates ./templates
 
 RUN mkdir -p /data
 
+EXPOSE 8080
+
 CMD [ "./stori-challenge" ]
