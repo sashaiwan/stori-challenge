@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"fmt"
@@ -10,8 +10,10 @@ import (
 	"time"
 )
 
+type FilesService struct{}
+
 // processCSV gets a filepath and return an array of validated Transaction struct
-func processCSV(filepath string) ([]models.Transaction, error) {
+func (f *FilesService) ProcessCSV(filepath string) ([]models.Transaction, error) {
 
 	lines, err := readAllLines(filepath)
 	if err != nil {
