@@ -8,13 +8,15 @@ import (
 type Server struct {
 	emailSender          services.EmailSender
 	transactionProcessor services.TransactionProcessor
+	csvProcessor         services.FilesProcessor
 	db                   *database.DB
 }
 
-func NewServer(emailSender services.EmailSender, transactionProcessor services.TransactionProcessor, db *database.DB) *Server {
+func NewServer(emailSender services.EmailSender, transactionProcessor services.TransactionProcessor, csvProcessor services.FilesProcessor, db *database.DB) *Server {
 	return &Server{
 		emailSender:          emailSender,
 		transactionProcessor: transactionProcessor,
+		csvProcessor:         csvProcessor,
 		db:                   db,
 	}
 }
