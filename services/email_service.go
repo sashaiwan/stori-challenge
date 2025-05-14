@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"bytes"
@@ -17,7 +17,10 @@ type EmailData struct {
 	StatsByMonth map[string]MonthlyStats
 }
 
-func sendEmail(stats TransactionStats, recipient string) error {
+// Empty struct in order to comply EmailSender interface
+type EmailService struct{}
+
+func (e *EmailService) SendEmail(stats TransactionStats, recipient string) error {
 	emailBody, err := generateHTMLEmail(stats)
 	if err != nil {
 		return fmt.Errorf("error creating the email template: %v", err)

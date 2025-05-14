@@ -1,4 +1,8 @@
-package main
+package services
+
+import "stori-challenge/models"
+
+type TransactionService struct{}
 
 type DebitCreditStats struct {
 	Average float64
@@ -28,7 +32,7 @@ type TransactionStats struct {
 //	  }
 //	},
 //	totalBalance: float64
-func getTransactionStats(transactions []Transaction) TransactionStats {
+func (t *TransactionService) GetTransactionStats(transactions []models.Transaction) TransactionStats {
 	stats := TransactionStats{
 		StatsByMonth: make(map[string]MonthlyStats),
 		TotalBalance: 0,
@@ -49,7 +53,7 @@ func getTransactionStats(transactions []Transaction) TransactionStats {
 		}
 
 		monthStats := stats.StatsByMonth[month]
-		if transaction.Type == Credit {
+		if transaction.Type == models.Credit {
 			stats.TotalBalance += transaction.Amount
 			monthStats.Credit.Count += 1
 			creditByMonth[month] = append(creditByMonth[month], transaction.Amount)
