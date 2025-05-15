@@ -27,7 +27,14 @@ func main() {
 	// 5. Create the CSV parser
 	// 6. Create the email service
 
-	godotenv.Load()
+	if !isDocker() {
+		err := godotenv.Load()
+		if err != nil {
+			log.Println("No .env file found, using system environment")
+		}
+	} else {
+		log.Println("Running in Docker, skipping .env file")
+	}
 
 	db, err := database.NewDB()
 	if err != nil {
@@ -54,4 +61,9 @@ func main() {
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal("HTTP server error: ", err)
 	}
+}
+
+func isDocker() bool {
+	_, err := os.Stat("/.dockerenv")
+	return err == nil
 }
