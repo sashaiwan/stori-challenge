@@ -24,7 +24,7 @@ if ! command -v aws &> /dev/null; then
     rm -rf awscliv2.zip aws/
 fi
 
-cd /home/ec2-user
+cd /home/ec2-user/stori-challenge
 APP_DIR=$(pwd)
 
 if [ ! -f "docker-compose.yml" ]; then
